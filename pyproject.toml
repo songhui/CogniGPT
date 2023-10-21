@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "cognigpt"
+version = "0.1.0"
+description = "GPT-powered multi-agent system inspired by the Global Workspace Theory"
+authors = ["Hui Song"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "^0.28.1"
+pyyaml = "^6.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

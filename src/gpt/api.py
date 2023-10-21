@@ -1,0 +1,73 @@
+"""Module providing basic open ai connection."""
+
+# from os import open
+from yaml import safe_load
+import openai
+
+
+def load_credential():
+    with open("openai.credential", 'r') as stream:
+        credential_data = safe_load(stream)
+    openai_config = credential_data['openai']
+    openai.api_type = "azure"
+    openai.api_base = openai_config['endpoint']
+    openai.api_version = "2023-03-15-preview"
+    openai.api_key = openai_config["key"]
+
+def one_shot_call(prompt):
+    
+    messages = [{"role":"user", "content":prompt}]
+
+    load_credential()
+    response = openai.ChatCompletion.create(
+        engine="gpt-4",
+        messages = messages,
+        temperature=0,
+        max_tokens=80,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
+    return response['choices'][0]['message']['content']
+
+def generate_code(prompt):
+
+    load_credential()
+    messages = [
+        {
+            "role": "system",
+            "content": '''you are a python programming master. 
+                The user will provide you a short text describing what he or she wants, 
+                and you generate pure python code based on the text. 
+                In the end of the generated code, please list all the required libraries, each 
+                in a line, as comments
+                '''
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
+    response = openai.ChatCompletion.create(
+        engine="gpt-4",
+        messages = messages,
+        temperature=0,
+        max_tokens=2000,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
+    print(response)
+    return response['choices'][0]['message']['content']
+
+if __name__ == "__main__":
+    while True:
+        prompt = input('prompt: ')
+        if len(prompt) == 0:
+            prompt = "please print the first 20 Fibonacci number";
+        code = generate_code(prompt)
+        exec(code)
+        print('====source code====')
+        print(code)
