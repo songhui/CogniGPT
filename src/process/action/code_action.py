@@ -1,18 +1,25 @@
-from basic_action import BasicAction, MessageType
+from basic_action import BasicAction, MessageType, terminate_message
 import traceback
 
 class CodeIncubator(BasicAction):
-    def run(self, message):
+
+    def _exec(self, message):
         # generate code action
-        try:
-            if message['type'] == MessageType.DYNABIC_CODE:
-                code = message['content']
-                new_action = DynamicCode(code)
-                print(new_action.code)
-                self.follow_ups['dynabic_code'] = new_action
-        except: # only if it is not code, go to subsequent actions
-            # traceback.print_exc()
-            super().run(message)
+        
+        if message['type'] == MessageType.DYNABIC_CODE:
+            code = message['content']
+            new_action = DynamicCode(code)
+            # print(new_action.code)
+            old_code_action = self.follow_ups.get('dynabic_code')
+            if old_code_action and old_code_action.follow_ups:
+                new_action.follow_ups = old_code_action.follow_ups
+            else:
+                new_action.follow_ups = self.follow_ups.copy()
+                self.follow_ups = {}
+            self.follow_ups['dynabic_code'] = new_action
+            return terminate_message()  # no need to follow up for source code
+        return message
+        
 
 class DynamicCode(BasicAction):
 
@@ -20,7 +27,7 @@ class DynamicCode(BasicAction):
         self.code = code
         super().__init__(follow_ups)
 
-    def run(self, message):
+    def _exec(self, message):
         firstline = self.code.splitlines()[0]
         func_name = None
         if firstline.startswith("#"):
@@ -32,9 +39,10 @@ class DynamicCode(BasicAction):
         exec(self.code)
         func = eval(func_name)
 
-        func(message)
+        # print(message)
+        func(message['content'])
 
-        return super().run(message)
+        return {'type': MessageType.RETURN, 'content': ""}
 
 
 if __name__ == "__main__":
@@ -43,6 +51,6 @@ if __name__ == "__main__":
     incubator = CodeIncubator()
     incubator.run(sample_message)
     
-    incubator.run("info")
-    incubator.run('nothing')
+    incubator.run({'type': MessageType.COMMAND, 'content': "info"})
+    incubator.run({'type': MessageType.COMMAND, 'content': "nothing"})
     

@@ -4,6 +4,8 @@
 from yaml import safe_load
 import openai
 
+from answers import extract_code
+
 
 def load_credential():
     with open("openai.credential", 'r') as stream:
@@ -39,10 +41,9 @@ def generate_code(prompt):
             "role": "system",
             "content": '''you are a python programming master. 
                 The user will provide you a short text describing what he or she wants, 
-                and you generate pure python code based on the text. 
+                and you generate pure python code based on the text (not command line) 
                 In the end of the generated code, please list all the required libraries, each 
-                in a line, as comments
-                '''
+                in a line, as comments'''
         },
         {
             "role": "user",
@@ -59,8 +60,12 @@ def generate_code(prompt):
         presence_penalty=0,
         stop=None
     )
-    print(response)
-    return response['choices'][0]['message']['content']
+    # print(response)
+    content = response['choices'][0]['message']['content']
+    code = extract_code(content)
+    # print(code)
+    return code['code']
+
 
 if __name__ == "__main__":
     while True:
@@ -69,5 +74,5 @@ if __name__ == "__main__":
             prompt = "please print the first 20 Fibonacci number";
         code = generate_code(prompt)
         exec(code)
-        print('====source code====')
+        print('\n====source code====')
         print(code)
