@@ -24,6 +24,10 @@ class BasicAction:
         for i in self.follow_ups:
             self.follow_ups[i].run(message)
 
+class PrintMessageAction(BasicAction):
+    def _exec(self, message):
+        print(message)
+        return message
 
 if __name__ == "__main__":
     None

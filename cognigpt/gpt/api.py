@@ -3,9 +3,7 @@
 # from os import open
 from yaml import safe_load
 import openai
-
-from answers import extract_code
-
+from .answers import extract_code
 
 def load_credential():
     with open("openai.credential", 'r') as stream:

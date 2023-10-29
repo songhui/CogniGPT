@@ -470,6 +470,19 @@ embeddings = ["matplotlib", "numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "
 wandb = ["numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)", "wandb"]
 
 [[package]]
+name = "paho-mqtt"
+version = "1.6.1"
+description = "MQTT version 5.0/3.1.1 client class"
+optional = false
+python-versions = "*"
+files = [
+    {file = "paho-mqtt-1.6.1.tar.gz", hash = "sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f"},
+]
+
+[package.extras]
+proxy = ["PySocks"]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.1"
 description = "YAML parser and emitter for Python"
@@ -692,4 +705,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "dfcb28558a3a296dd73f05586a199060739ad66378255cfb238a8e74cba5c717"
+content-hash = "b768895daf2f55c6517314ddc33d93adb396419da91a6302d27090dd3d66ff67"

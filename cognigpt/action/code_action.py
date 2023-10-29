@@ -1,5 +1,5 @@
-from basic_action import BasicAction, MessageType, terminate_message
 import traceback
+from .basic_action import BasicAction, MessageType, terminate_message
 
 class CodeIncubator(BasicAction):
 
