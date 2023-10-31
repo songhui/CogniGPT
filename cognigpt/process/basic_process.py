@@ -3,30 +3,29 @@ from ..attention.basic_attention import BasicAttention
 
 
 class IgnoreFrom(BasicAttention):
-    def __init__(self, froms: [], follow_ups: {}):
+    def __init__(self, froms: []):
         self.excluded = froms
-        super().__init__(follow_ups)
 
-    def is_relevant(self, message) -> bool:
+    def relevant(self, message) -> bool:
         if not 'from' in message:
             return True
         return not(message['from'] in self.excluded)
 
 class BasicProcess:
-    def __init__(self, name, units: {}, attentions: []):
+    def __init__(self, name, actions: {}, attentions: []):
         self.name = name
-        self.units = units
+        self.actions = actions
         self.attentions = attentions
 
     def receive(self, message):
         for att in self.attentions:
-            if not att.is_relevant(message):
+            if not att.relevant(message):
                 return
-        for i in self.units:
-            self.units[i].run(message)
+        for i in self.actions:
+            self.actions[i].run(message)
 
     def get_responser(self):
         return PrintMessageAction()
     
-    def add_units(self, name, unit):
-        self.units[name] = unit
+    def add_actions(self, name, unit):
+        self.actions[name] = unit

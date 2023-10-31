@@ -4,17 +4,12 @@ random.seed()
 from ..action.basic_action import MessageType
 
 class BasicAttention:
-    def __init__(self, follow_ups: {}):
-        self.follow_ups = follow_ups
+    def relevant(self, message) -> bool:
+        return False
 
+class ProbabilityAttention:
     def _relevance(self, message) -> float:
         return 0
-    
-    def run(self, message):
-        relevance = self._relevance(message)
-        if random.random() < relevance:
-            for i in self.follow_ups:
-                self.follow_ups[i].run(message)
     
     def is_relevant(self, message) -> bool:
         relevance = self._relevance(message)
@@ -23,9 +18,8 @@ class BasicAttention:
 
 
 class AlwaysAttention(BasicAttention):
-
-    def _relevance(self, message):
-        return 1
+    def relevant(self, message):
+        return True
             
 
 if __name__ == '__main__':

@@ -9,12 +9,12 @@ from ..action.basic_action import BasicAction, AppendAction
 class MQTTProcess(BasicProcess):
 
     class MQTTResponserAction(BasicAction):
-        def __init__(self, process, follow_ups={}):
+        def __init__(self, process, subseq={}, attentions=[]):
             self.process_name = process.name
             self.mqttbroker = process.mqttbroker
             self.client = mqtt.Client()
-            super().__init__(follow_ups)
-            
+            super().__init__(subseq, attentions)
+
         def _exec(self, message):
             message['from'] = self.process_name
             if not self.client.is_connected():
@@ -23,9 +23,9 @@ class MQTTProcess(BasicProcess):
             self.client.publish(self.mqttbroker['topic'], json.dumps(message))
             return message      
 
-    def __init__(self, name, mqttbroker, units: {}, attentions: []):
+    def __init__(self, name, mqttbroker, actions: {}, attentions: []):
         self.mqttbroker = mqttbroker
-        super().__init__(name, units, attentions)
+        super().__init__(name, actions, attentions)
 
     def get_responser(self):
         return self.MQTTResponserAction(self)
@@ -55,11 +55,11 @@ if __name__ == '__main__':
     process_name = 'NoOne'
     process = MQTTProcess(process_name, 
                           mqttbroker={'host': 'localhost', 'port': 1883, 'topic': 'some/topic'},
-                          units={}, 
-                          attentions=[IgnoreFrom([process_name], {})]
+                          actions={}, 
+                          attentions=[IgnoreFrom([process_name])]
                           )
     
     responser = process.get_responser()
-    append_action = AppendAction(postfix = '- by myself', follow_ups = {'publish': responser})
-    process.add_units('test', append_action)
+    append_action = AppendAction(postfix = '- by myself', subseq = {'publish': responser})
+    process.add_actions('test', append_action)
     process.listen()
