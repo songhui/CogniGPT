@@ -1,14 +1,9 @@
 from enum import auto
 from strenum import StrEnum
+from ..gws.message import MessageType, terminate_message
 
-class MessageType:
-    DYNABIC_CODE = 'dynabic_code'
-    COMMAND = 'command'
-    TERMINATE = 'terminate'
-    RETURN = 'return'
 
-def terminate_message():
-    return {'type': MessageType.TERMINATE, 'content': ''}  
+
 
 class BasicAction:
     def __init__(self, follow_ups = {}):
@@ -28,6 +23,16 @@ class PrintMessageAction(BasicAction):
     def _exec(self, message):
         print(message)
         return message
+    
+class AppendAction(BasicAction):
+    def __init__(self, postfix, follow_ups: {}):
+        self.postfix = postfix
+        super().__init__(follow_ups)
+
+    def _exec(self, message):
+        message['content'] = message['content'] + self.postfix
+        return message
 
 if __name__ == "__main__":
     None
+

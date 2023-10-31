@@ -16,6 +16,10 @@ class BasicAttention:
             for i in self.follow_ups:
                 self.follow_ups[i].run(message)
     
+    def is_relevant(self, message) -> bool:
+        relevance = self._relevance(message)
+        return random.random() < relevance
+    
 
 
 class AlwaysAttention(BasicAttention):

@@ -1,10 +1,9 @@
 services:
   mosquitto:
-    build:
-      context: .
+    image: eclipse-mosquitto:2.0.18
     volumes:
       - type: bind
-        source: ./volumes/mosquitto/config/
+        source: ./config/mosquitto
         target: /mosquitto/config/
       - type: bind
         source: ./volumes/mosquitto/log/

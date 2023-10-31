@@ -1,5 +1,6 @@
 import traceback
-from .basic_action import BasicAction, MessageType, terminate_message
+from .basic_action import BasicAction
+from ..gws.message import MessageType, terminate_message
 
 class CodeIncubator(BasicAction):
 
