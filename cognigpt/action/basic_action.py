@@ -18,7 +18,9 @@ class BasicAction:
         if new_message['type'] == MessageType.TERMINATE:
             return
         for i in self.subseq:
-            self.subseq[i].run(message)
+            self.subseq[i].run(new_message)
+    def set_process(self, process):
+        self.process = process
 
 class PrintMessageAction(BasicAction):
     def _exec(self, message):

@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
+from threading import Thread
 
 from .basic_process import BasicProcess, IgnoreFrom
 from ..action.basic_action import BasicAction, AppendAction
@@ -39,16 +40,15 @@ class MQTTProcess(BasicProcess):
         def on_message(client, userdata, msg):
             print(msg.topic+" "+str(msg.payload))
             message = json.loads(msg.payload)
-            self.receive(message)
+            thread = Thread(target=self.receive, args=[message])
+            thread.start()
+            # self.receive(message)
             
         client = mqtt.Client()
         client.on_connect = on_connect
         client.on_message = on_message
         client.connect(self.mqttbroker['host'], self.mqttbroker['port'], 60)
         client.loop_forever()
-
-        
-
 
 
 if __name__ == '__main__':

@@ -6,6 +6,9 @@ import openai
 from .answers import extract_code
 
 def load_credential():
+    if openai.api_key:
+        print('already set')
+        return
     with open("openai.credential", 'r') as stream:
         credential_data = safe_load(stream)
     openai_config = credential_data['openai']
@@ -30,6 +33,25 @@ def one_shot_call(prompt):
         stop=None
     )
     return response['choices'][0]['message']['content']
+
+### the context will be changed after the call
+def call_with_context(context: list, prompt: str, role='user') -> str:
+    context.append({'role': role, 'content': prompt})
+    load_credential()
+    response = openai.ChatCompletion.create(
+        engine="gpt-4",
+        messages = context,
+        temperature=0,
+        max_tokens=3000,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
+    message = response['choices'][0]['message']
+    context.append(message)
+    return message['content']
+
 
 def generate_code(prompt):
 
@@ -65,12 +87,18 @@ def generate_code(prompt):
     return code['code']
 
 
+
+
 if __name__ == "__main__":
+    context = []
     while True:
+        role = input('role: ')
         prompt = input('prompt: ')
-        if len(prompt) == 0:
-            prompt = "please print the first 20 Fibonacci number";
-        code = generate_code(prompt)
-        exec(code)
-        print('\n====source code====')
-        print(code)
+    #     if len(prompt) == 0:
+    #         prompt = "please print the first 20 Fibonacci number";
+    #     code = generate_code(prompt)
+    #     exec(code)
+    #     print('\n====source code====')
+    #     print(code)
+        reply = call_with_context(context, prompt)
+        print(reply)

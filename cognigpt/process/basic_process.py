@@ -16,6 +16,7 @@ class BasicProcess:
         self.name = name
         self.actions = actions
         self.attentions = attentions
+        self.variables = {}
 
     def receive(self, message):
         for att in self.attentions:
@@ -27,5 +28,25 @@ class BasicProcess:
     def get_responser(self):
         return PrintMessageAction()
     
-    def add_actions(self, name, unit):
-        self.actions[name] = unit
+    def add_actions(self, name, action):
+        self.actions[name] = action
+    
+    def _init_action(self, action):
+        action.process = self
+
+    def init_all_actions(self):
+        def traverse(action):
+            self._init_action(action)
+            for i in action.subseq:
+                traverse(action.subseq[i])
+        for i in self.actions:
+            traverse(self.actions[i])
+
+
+if __name__ == '__main__':
+    action1 = PrintMessageAction()
+    action2 = PrintMessageAction({'act': action1})
+    process = BasicProcess('pname', {'acc': action2}, [])
+    process.init_all_actions()
+
+    print(action1.process.name)
