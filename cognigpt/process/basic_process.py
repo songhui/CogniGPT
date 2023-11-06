@@ -24,34 +24,24 @@ class BasicProcess:
                 return
         for i in self.actions:
             self.actions[i].run(message)
-
-    def get_responser(self):
-        return PrintMessageAction()
     
     def add_actions(self, name, action):
         self.actions[name] = action
     
-    def _init_action(self, action):
-        action.process = self
-        for att in action.attention:
-            att.process = self
 
 
     def init_all_actions(self):
-        def traverse(action):
-            self._init_action(action)
-            for i in action.subseq:
-                traverse(action.subseq[i])
+        def set_process(act):
+            act.process = self
         for i in self.actions:
-            traverse(self.actions[i])
+            self.actions[i].traverse(set_process)
         for att in self.attentions:
             att.process = self
 
 
 if __name__ == '__main__':
-    action1 = PrintMessageAction()
-    action2 = PrintMessageAction({'act': action1})
-    process = BasicProcess('pname', {'acc': action2}, [])
+    
+    process = BasicProcess('pname', {'acc': PrintMessageAction()}, [])
     process.init_all_actions()
 
-    print(action1.process.name)
+

@@ -2,6 +2,8 @@ import paho.mqtt.client as mqtt
 import json
 from threading import Thread
 
+from ..action.combined_action import SEQ
+
 from .basic_process import BasicProcess, IgnoreFrom
 from ..action.basic_action import BasicAction, AppendAction
 from ..attention.basic_attention import BasicAttention
@@ -14,8 +16,6 @@ class MQTTProcess(BasicProcess):
         self.mqttbroker = mqttbroker
         super().__init__(name, actions, attentions)
 
-    def get_responser(self):
-        return self.MQTTResponserAction(self)
     
     def listen(self):
         
@@ -24,7 +24,7 @@ class MQTTProcess(BasicProcess):
             client.subscribe(self.mqttbroker['topic'])
         
         def on_message(client, userdata, msg):
-            print(msg.topic+" "+str(msg.payload))
+            # print(msg.topic+" "+str(msg.payload))
             message = json.loads(msg.payload)
             thread = Thread(target=self.receive, args=[message])
             thread.start()
@@ -38,8 +38,10 @@ class MQTTProcess(BasicProcess):
 
 
 class NotFromMeAttention(BasicAttention):
+    
     def relevant(self, message) -> bool:
-        if 'from' in message and (not self.process) and message['from'] == self.process.name:
+        # print('------------' + message['from'] + '---' + self.process.name + '---')
+        if ('from' in message) and (self.process) and (message['from'] == self.process.name):
             return False
         return True
 
@@ -47,9 +49,9 @@ class NotFromMeAttention(BasicAttention):
 class MQTTResponserAction(BasicAction):
     def __init__(self, subseq={}, attentions=[]):
         self.client = mqtt.Client()
-        super().__init__(subseq, attentions)
+        super().__init__()
 
-    def _exec(self, message):
+    def run(self, message):
         message['from'] = self.process.name
         try:
             mqttbroker = self.process.mqttbroker
@@ -64,13 +66,14 @@ class MQTTResponserAction(BasicAction):
 
 if __name__ == '__main__':
     process_name = 'NoOne'
-    process = MQTTProcess(process_name, 
-                          mqttbroker={'host': 'localhost', 'port': 1883, 'topic': 'some/topic'},
-                          actions={}, 
-                          attentions=[NotFromMeAttention()]
-                          )
+    process = MQTTProcess(
+        process_name, 
+        mqttbroker={'host': 'localhost', 'port': 1883, 'topic': 'some/topic'},
+        actions={'single': SEQ([AppendAction('-by my self'), MQTTResponserAction()])}, 
+        attentions=[NotFromMeAttention()]
+    )
     
-    responser = process.get_responser()
-    append_action = AppendAction(postfix = '- by myself', subseq = {'publish': responser})
-    process.add_actions('test', append_action)
+    process.init_all_actions()
     process.listen()
+
+    # Test this with ```mqtt pub -h 'localhost' -t 'some/topic' -m '{"type":"text", "from":"host", "content":"hello"}' ````

@@ -5,6 +5,8 @@ from yaml import safe_load
 import openai
 from .answers import extract_code
 
+GPT_ENGINE = 'gpt-4'
+
 def load_credential():
     if openai.api_key:
         print('already set')
@@ -23,7 +25,7 @@ def one_shot_call(prompt):
 
     load_credential()
     response = openai.ChatCompletion.create(
-        engine="gpt-4",
+        engine=GPT_ENGINE,
         messages = messages,
         temperature=0,
         max_tokens=80,
@@ -40,7 +42,7 @@ def call_with_context(context: list, prompt: str, role='user') -> str:
     load_credential()
     print(context)
     response = openai.ChatCompletion.create(
-        engine="gpt-4",
+        engine=GPT_ENGINE,
         messages = context,
         temperature=0,
         max_tokens=3000,

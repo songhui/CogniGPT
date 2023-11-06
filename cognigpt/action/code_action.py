@@ -4,31 +4,44 @@ from ..gws.message import MessageType, terminate_message
 
 class CodeIncubator(BasicAction):
 
-    def _exec(self, message):
+    def __init__(self):
+        self.code_action = None
+
+
+
+    def run(self, message):
         # generate code action
         
-        if message['type'] == MessageType.DYNABIC_CODE:
-            code = message['content']
-            new_action = DynamicCode(code)
-            # print(new_action.code)
-            old_code_action = self.follow_ups.get('dynabic_code')
-            if old_code_action and old_code_action.follow_ups:
-                new_action.follow_ups = old_code_action.follow_ups
-            else:
-                new_action.follow_ups = self.follow_ups.copy()
-                self.follow_ups = {}
-            self.follow_ups['dynabic_code'] = new_action
-            return terminate_message()  # no need to follow up for source code
+        if message['type'] == MessageType.DYNAMIC_CODE:
+            try:
+                code = message['content']
+                if not self.code_action:
+                    self.code_action = DynamicCode(code)
+                else:
+                    self.code_action.code = code
+                message = message.copy()
+                message['note'] = 'code updated' # no need to follow up for source code
+                return message
+            except Exception as e:
+                self.code_action = None
+        elif self.code_action:
+            self.code_action.process = self.process
+            message = self.code_action.run(message)
+            return message
         return message
-        
+
+    def traverse(self, fn):
+        if self.code_action:
+            self.code_action.traverse(fn)
+        return super().traverse(fn)    
 
 class DynamicCode(BasicAction):
 
-    def __init__(self, code = '', follow_ups = {}):
+    def __init__(self, code = ''):
         self.code = code
-        super().__init__(follow_ups)
+        super().__init__()
 
-    def _exec(self, message):
+    def run(self, message):
         firstline = self.code.splitlines()[0]
         func_name = None
         if firstline.startswith("#"):
@@ -41,14 +54,14 @@ class DynamicCode(BasicAction):
         func = eval(func_name)
 
         # print(message)
-        func(message['content'])
+        result = func(message['content'])
 
-        return {'type': MessageType.RETURN, 'content': ""}
+        return {'type': MessageType.RETURN, 'content': result}
 
 
 if __name__ == "__main__":
     sample_code = "# get_system_info\ndef get_system_info(arg):\n    import os\n    import platform\n    if arg == \"info\":\n        print(platform.machine())\n    elif arg == \"cpu\":\n        print(50)\n    else:\n        print(\"I don't understand\")\n\n# platform\n# psutil"
-    sample_message = {'type': MessageType.DYNABIC_CODE, 'content': sample_code}
+    sample_message = {'type': MessageType.DYNAMIC_CODE, 'content': sample_code}
     incubator = CodeIncubator()
     incubator.run(sample_message)
     

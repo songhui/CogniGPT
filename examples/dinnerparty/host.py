@@ -1,4 +1,5 @@
-from cognigpt.action.gpt_action import GptAction, GptActionWithResponse, CollectResponseAction
+from cognigpt.action.basic_action import PrintMessageAction
+from cognigpt.action.gpt_action import AddWhoSaidAction, GptAction, GptActionWithResponse, CollectResponseAction
 from cognigpt.attention.basic_attention import BasicAttention
 from cognigpt.process.mqtt_process import MQTTProcess, MQTTResponserAction, NotFromMeAttention
 from cognigpt.action.cli_action import CliInputAction
@@ -12,7 +13,7 @@ background = ''' You are an assistent helping of a human host. The host wants
                  to call for a dinner party, and she will tell you some tasks that 
                  she or her guests need to do. To simplify, each task needs 1 hour. 
                  After you knows the tasks, please send a message to the guest group,
-                 inviting them for party and ask them if they could take some tasks, 
+                 inviting them for party and ask them if they could take some tasks (1 for each person), 
                  if they have some constraints or preferences for some tasks. After you
                  get enough responses, you can make an assignment to the guests and the host
                  herself. 
@@ -38,20 +39,21 @@ if __name__ == '__main__':
     def is_to_host(action, message):
         return message['content'].startswith('To Host')
     def is_to_guest(action, message):
-        return message['content'].startswith('To Guest')
+        return message['content'].startswith('To') and (not message['content'].startswith('To Host')) and (not message['content'].startswith('To Wait'))
 
     combined_action = SEQ(
         [
-            IF(is_not_start, CollectResponseAction()),
+            AddWhoSaidAction(),
             gpt_action,
-            IF(is_to_host, SEQ([CliInputAction(), gpt_action])),
+            PrintMessageAction(),
+            IF(is_to_host, SEQ([CliInputAction(), gpt_action, PrintMessageAction()])),
             IF(is_to_guest, MQTTResponserAction())
         ]
     )
 
     process = MQTTProcess(
         name='host', 
-        mqttbroker={'host': 'broker.hivemq.com', 'port': 1883, 'topic': 'cognigpt/dinner-party'},
+        mqttbroker={'host': 'localhost', 'port': 1883, 'topic': 'cognigpt/dinner-party'},
         actions={'main': combined_action},
         attentions=[NotFromMeAttention()]
     )
@@ -61,5 +63,5 @@ if __name__ == '__main__':
 
     process.listen()
 
-
+    # host reply: Buy food, use the food to make meal, buy drinks. I don't want to cook.
 

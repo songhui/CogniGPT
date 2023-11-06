@@ -20,6 +20,16 @@ class ProbabilityAttention:
 class AlwaysAttention(BasicAttention):
     def relevant(self, message):
         return True
+    
+class MessageFromAttention(BasicAttention):
+    def __init__(self, included=[]):
+        self.included = included
+        super().__init__()
+
+    def relevant(self, message):
+        if ('from' in message) and (message['from'] in self.included):
+            return True
+        return False
             
 class MessageLambdaAttention(BasicAttention):
     def __init__(self, message_lambda):
@@ -39,7 +49,6 @@ if __name__ == '__main__':
 
     from ..action.basic_action import PrintMessageAction
 
-    attention = AlwaysAttention({'opration': PrintMessageAction()})
-    attention.run({'type':'any', 'content': 'my content'})
+
 
 

@@ -6,7 +6,7 @@ class WaitAction(BasicAction):
     def is_ready(self):
         return False
     
-    def _exec(self, message):
+    def run(self, message):
         while True:
             if self.is_ready():
                 print('not ready')
