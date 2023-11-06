@@ -33,6 +33,9 @@ class BasicProcess:
     
     def _init_action(self, action):
         action.process = self
+        for att in action.attention:
+            att.process = self
+
 
     def init_all_actions(self):
         def traverse(action):
@@ -41,6 +44,8 @@ class BasicProcess:
                 traverse(action.subseq[i])
         for i in self.actions:
             traverse(self.actions[i])
+        for att in self.attentions:
+            att.process = self
 
 
 if __name__ == '__main__':

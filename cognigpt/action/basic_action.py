@@ -6,15 +6,16 @@ class BasicAction:
     def __init__(self, subseq = {}, attention = []):
         self.subseq = subseq.copy()
         self.attention = attention.copy()
+        self.process = None
 
     def _exec(self, message):
-        return terminate_message()
+        return message
 
     def run(self, message):
         for att in self.attention:
             if not att.relevant():
                 return 
-        new_message = self._exec(message)
+        new_message = self._exec(message.copy())
         if new_message['type'] == MessageType.TERMINATE:
             return
         for i in self.subseq:

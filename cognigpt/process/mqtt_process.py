@@ -4,25 +4,11 @@ from threading import Thread
 
 from .basic_process import BasicProcess, IgnoreFrom
 from ..action.basic_action import BasicAction, AppendAction
+from ..attention.basic_attention import BasicAttention
 
 
 
 class MQTTProcess(BasicProcess):
-
-    class MQTTResponserAction(BasicAction):
-        def __init__(self, process, subseq={}, attentions=[]):
-            self.process_name = process.name
-            self.mqttbroker = process.mqttbroker
-            self.client = mqtt.Client()
-            super().__init__(subseq, attentions)
-
-        def _exec(self, message):
-            message['from'] = self.process_name
-            if not self.client.is_connected():
-                self.client.connect(self.mqttbroker['host'], self.mqttbroker['port'])
-            # self.client.on_publish()
-            self.client.publish(self.mqttbroker['topic'], json.dumps(message))
-            return message      
 
     def __init__(self, name, mqttbroker, actions: {}, attentions: []):
         self.mqttbroker = mqttbroker
@@ -51,12 +37,37 @@ class MQTTProcess(BasicProcess):
         client.loop_forever()
 
 
+class NotFromMeAttention(BasicAttention):
+    def relevant(self, message) -> bool:
+        if 'from' in message and (not self.process) and message['from'] == self.process.name:
+            return False
+        return True
+
+
+class MQTTResponserAction(BasicAction):
+    def __init__(self, subseq={}, attentions=[]):
+        self.client = mqtt.Client()
+        super().__init__(subseq, attentions)
+
+    def _exec(self, message):
+        message['from'] = self.process.name
+        try:
+            mqttbroker = self.process.mqttbroker
+            if not self.client.is_connected():
+                self.client.connect(mqttbroker['host'], mqttbroker['port'])
+            # self.client.on_publish()
+            self.client.publish(mqttbroker['topic'], json.dumps(message))
+            return message  
+        except Exception as e:
+            print(e)
+            return message
+
 if __name__ == '__main__':
     process_name = 'NoOne'
     process = MQTTProcess(process_name, 
                           mqttbroker={'host': 'localhost', 'port': 1883, 'topic': 'some/topic'},
                           actions={}, 
-                          attentions=[IgnoreFrom([process_name])]
+                          attentions=[NotFromMeAttention()]
                           )
     
     responser = process.get_responser()

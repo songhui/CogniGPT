@@ -38,6 +38,7 @@ def one_shot_call(prompt):
 def call_with_context(context: list, prompt: str, role='user') -> str:
     context.append({'role': role, 'content': prompt})
     load_credential()
+    print(context)
     response = openai.ChatCompletion.create(
         engine="gpt-4",
         messages = context,
@@ -100,5 +101,5 @@ if __name__ == "__main__":
     #     exec(code)
     #     print('\n====source code====')
     #     print(code)
-        reply = call_with_context(context, prompt)
+        reply = call_with_context(context, prompt, role)
         print(reply)
