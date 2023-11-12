@@ -30,6 +30,21 @@ class MessageFromAttention(BasicAttention):
         if ('from' in message) and (message['from'] in self.included):
             return True
         return False
+    
+class MessageToAttention(BasicAttention):
+    def __init__(self, included=[]):
+        self.included = included
+        super().__init__()
+
+    def relevant(self, message):
+        return message.get('to') in self.included
+
+class MessageTypeAttention(BasicAttention):
+    def __init__(self, included=[]):
+        self.included = included
+        super().__init__()
+    def relevant(self, message) -> bool:
+        return message.get('type') in self.included
             
 class MessageLambdaAttention(BasicAttention):
     def __init__(self, message_lambda):

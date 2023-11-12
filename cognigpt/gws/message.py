@@ -4,6 +4,8 @@ class MessageType:
     TERMINATE = 'terminate'
     RETURN = 'return'
     TEXT = 'text'
+    SYSTEM = 'system'
+    QUERY = 'query'
     
 
 def terminate_message():

@@ -25,6 +25,7 @@ class GptActionWithResponse(GptAction):
         responses = self.process.variables['responses']
         for res in responses:
             self.add_context(res['role'], res['content'])
+        self.process.variables['responses'].clear() # responses are now in the context, no need here
         return super().run(message)
 
 class CollectResponseAction(BasicAction):

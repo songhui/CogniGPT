@@ -27,7 +27,29 @@ class IF(BasicAction):
             self.else_action.traverse(fn)
 
         return super().traverse(fn)
+
+class WHILE(BasicAction):
+    def __init__(self, condition, action):
+        self.condition = condition
+        self.action = action
+        super().__init__()
+
+    def run(self, message):
+        action = self.action
+        action.process = self.process
+        while self.condition(self, message):
+            message = action.run(message)
+        return message
     
+    def traverse(self, fn):
+        if self.action:
+            self.action.traverse(fn)
+        return super().traverse(fn)
+    
+class WHILE_TRUE(WHILE):
+    def __init__(self, action):
+        super().__init__(lambda action, message: True, action)
+
 class SEQ(BasicAction):
     def __init__(self, body=[]):
         self.body = body

@@ -2,6 +2,8 @@ import paho.mqtt.client as mqtt
 import json
 from threading import Thread
 
+from cognigpt.gws.message import MessageType
+
 from ..action.combined_action import SEQ
 
 from .basic_process import BasicProcess, IgnoreFrom
@@ -16,7 +18,11 @@ class MQTTProcess(BasicProcess):
         self.mqttbroker = mqttbroker
         super().__init__(name, actions, attentions)
 
-    
+    def start(self, message={}, variables={}):
+
+        super().start(message, variables)
+        self.listen()
+
     def listen(self):
         
         def on_connect(client, userdata, flags, rc):

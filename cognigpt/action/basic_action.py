@@ -31,6 +31,16 @@ class AppendAction(BasicAction):
         message['content'] = message['content'] + self.postfix
         return message
 
+class MessageUpdateAction(BasicAction):
+    def __init__(self, update:dict = {}):
+        self.update = update
+        super().__init__()
+
+    def run(self, message):
+        message = message.copy()
+        message.update(self.update)
+        return super().run(message)
+
 if __name__ == "__main__":
     None
 

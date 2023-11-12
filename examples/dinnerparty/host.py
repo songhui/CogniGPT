@@ -11,18 +11,15 @@ class TwoResponseAttention(BasicAttention):
 
 background = ''' You are an assistent helping of a human host. The host wants 
                  to call for a dinner party, and she will tell you some tasks that 
-                 she or her guests need to do. To simplify, each task needs 1 hour. 
+                 she or her guests need to do. Every task must be assigned to one and only one person. 
                  After you knows the tasks, please send a message to the guest group,
-                 inviting them for party and ask them if they could take some tasks (1 for each person), 
-                 if they have some constraints or preferences for some tasks. After you
+                 ask them if they have some constraints or preferences for the tasks. After you
                  get enough responses, you can make an assignment to the guests and the host
-                 herself. 
-                 All generated text and messages should be short and concise - no need for 
-                 sophisticated explanation.
-                 She needs at least 2 guests.
-                 Some tasks may depend on another task, this you need to use commen senses.
-                 Whenever you feel that you need more information from the host, 
-                 you say "To Host", followed by your question to the host.
+                 herself, and send a simple message with pairs of Person -> Task.
+                 All generated text should be short - no need for explanation or being polite.
+                 Use common sense for task dependencies
+                 Whenever you need more information from the host, 
+                 you say "To Host", followed by your question.
                  If you want to send a message to the guests, say "To Guest", followed by the 
                  message.
                  Otherwise, if you don't need to do another, but only to wait for more response,
@@ -63,5 +60,5 @@ if __name__ == '__main__':
 
     process.listen()
 
-    # host reply: Buy food, use the food to make meal, buy drinks. I don't want to cook.
+    # host reply: Buy food, use the food to make meal, buy drinks. I don't like cooking, btw.
 

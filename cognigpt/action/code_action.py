@@ -1,4 +1,5 @@
 import traceback
+import json
 from .basic_action import BasicAction
 from ..gws.message import MessageType, terminate_message
 
@@ -6,8 +7,6 @@ class CodeIncubator(BasicAction):
 
     def __init__(self):
         self.code_action = None
-
-
 
     def run(self, message):
         # generate code action
@@ -54,10 +53,19 @@ class DynamicCode(BasicAction):
         func = eval(func_name)
 
         # print(message)
-        result = func(message['content'])
-
+        try:
+            result = func(message['content'])
+        except TypeError as e:
+            result = func()
+        if isinstance(result, dict):
+            result = json.dumps(result)
         return {'type': MessageType.RETURN, 'content': result}
 
+
+class CodeGenerator4Function(BasicAction):
+    def run(self, message):
+
+        return super().run(message)
 
 if __name__ == "__main__":
     sample_code = "# get_system_info\ndef get_system_info(arg):\n    import os\n    import platform\n    if arg == \"info\":\n        print(platform.machine())\n    elif arg == \"cpu\":\n        print(50)\n    else:\n        print(\"I don't understand\")\n\n# platform\n# psutil"

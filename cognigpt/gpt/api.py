@@ -40,7 +40,7 @@ def one_shot_call(prompt):
 def call_with_context(context: list, prompt: str, role='user') -> str:
     context.append({'role': role, 'content': prompt})
     load_credential()
-    print(context)
+    # print(context)
     response = openai.ChatCompletion.create(
         engine=GPT_ENGINE,
         messages = context,
@@ -55,18 +55,22 @@ def call_with_context(context: list, prompt: str, role='user') -> str:
     context.append(message)
     return message['content']
 
-
+CODE_ORACLE='''
+you are a python programming master. \
+The user will provide you a short text describing what he or she wants, \
+and you generate pure python code based on the text (not command line) \
+In the end of the generated code, please list all the required libraries, each \
+in a line, as comments. If you were asked to generate a fundtion, you don't need \
+to provide the usage of the function, nor the __main__ segment, but the very first line \
+of the generated code should be a comment with name of the main function you want the user to call.
+'''
 def generate_code(prompt):
 
     load_credential()
     messages = [
         {
             "role": "system",
-            "content": '''you are a python programming master. 
-                The user will provide you a short text describing what he or she wants, 
-                and you generate pure python code based on the text (not command line) 
-                In the end of the generated code, please list all the required libraries, each 
-                in a line, as comments'''
+            "content": CODE_ORACLE
         },
         {
             "role": "user",
@@ -95,6 +99,7 @@ def generate_code(prompt):
 if __name__ == "__main__":
     context = []
     while True:
+        context = [{'role': 'user', 'content':'I will give you a number, and you tell me how it is the sum of two prime numbers'}]
         role = input('role: ')
         prompt = input('prompt: ')
     #     if len(prompt) == 0:
