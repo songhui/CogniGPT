@@ -1,4 +1,7 @@
 import json
+
+from termcolor import colored
+
 from cognigpt.action.basic_action import BasicAction
 from cognigpt.action.gpt_action import GptAction, GptActionWithResponse, CollectResponseAction
 from cognigpt.attention.basic_attention import BasicAttention, MessageFromAttention, MessageLambdaAttention, MessageToAttention
@@ -72,15 +75,20 @@ class ReactToCloudAction(BasicAction):
         return super().traverse(fun)
     
     def run(self, message):
-        print("----")
         print(message)
+
         variables = self.process.variables
+
+        if message['from'] == 'operator':
+            variables['responses'].append({'role': 'user', 'content': message['content']})
+            return super().run(message)
+
         vdict = {k: variables[k] for k in ('edge_inst', 'edge_cap')}
         variables['responses'].append({'role': 'user', 'content': json.dumps(vdict)})
         message = self.gpt_action.run(message)
 
         content = json.loads(message['content'])
-        print(content.get('command'))
+        print(colored(content.get('command'), 'green'))
         
         edge_inst = content.get('edge_inst')
         if edge_inst:
@@ -88,9 +96,11 @@ class ReactToCloudAction(BasicAction):
         answer = {k:content[k] for k in ['edge_inst', 'performance', 'excuse', 'alternatives']}
         answer.update({'note': 'This is the response from the edge'})
         message['content'] = json.dumps(answer)
+        message['to'] = 'cloud'
 
         message = self.mqtt_responser.run(message)
-        print("message sent to cloud:" + json.dumps(message))
+        print("message sent to cloud:")
+        print(message['content'])
         return super().run(message)
     
 
@@ -108,7 +118,7 @@ if __name__ == '__main__':
             '_init': WHILE_TRUE(ui_act),
             'react_to_cloud': react_to_cloud
         },
-        attentions=[MessageToAttention(['edge'])]
+        attentions=[MessageToAttention(['edge', 'all'])]
     )
 
     process.start(

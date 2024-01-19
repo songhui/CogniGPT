@@ -72,7 +72,7 @@ class UiAction(BasicAction):
         variables['responses'].append({'role': 'user', 'content': json.dumps(vdict)})
 
         answer = self.gpt_action.run({'type': MessageType.TEXT, 'from': 'cloud', 'content': prompt})
-        print(answer)
+        print(answer['content'])
         content = json.loads(answer['content'])
         if ('message' in content) and (content['message'] == 'No Change'):
             None
@@ -107,11 +107,14 @@ class CollectEdgeResponse(CollectResponseAction):
             print('updated variables: {}'.format(self.process.variables))
             
         except Exception as e:
-            print(e)
-            print('return not in json')
+            # print(e)
+            # print('return not in json')
             print(message)
-        
-        if message.get('from') == 'edge': # do not consider customer's query as response
+            if message.get('from') == 'operator':
+                intent = message['content']
+                message['content'] = "Operator's intent: ${}".format(intent)
+
+        if message.get('from') in ('edge', 'operator'): # do not consider customer's query as response
             super().run(message)
     
 class PopulateCode(BasicAction):

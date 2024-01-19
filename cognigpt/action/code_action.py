@@ -57,6 +57,8 @@ class DynamicCode(BasicAction):
             result = func(message['content'])
         except TypeError as e:
             result = func()
+        except FileNotFoundError as e:
+            result = func()
         if isinstance(result, dict):
             result = json.dumps(result)
         return {'type': MessageType.RETURN, 'content': result}
